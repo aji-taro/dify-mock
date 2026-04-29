@@ -1,0 +1,18 @@
+services:
+  dummy-llm:
+    build:
+      context: ../../dummy-llm/server  # dify/docker/ から見た server/ への相対パス
+      dockerfile: Dockerfile
+    container_name: dummy-llm
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    restart: unless-stopped
+    volumes:
+      - ../../dummy-llm/server:/app
+    networks:
+      - ssrf_proxy_network        # api/worker コンテナが使用するネットワーク
+      - default                   # plugin_daemon コンテナが使用するネットワーク
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3

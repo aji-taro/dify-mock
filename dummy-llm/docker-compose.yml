@@ -1,0 +1,30 @@
+# ============================================================
+#  Dummy LLM サービス単体の起動用 Compose ファイル
+#
+#  【使い方】
+#  このファイルはダミーLLMサーバーだけを起動します。
+#  Dify と統合する場合は、下記 README の手順に従って
+#  Dify 公式の docker-compose.yaml にサービスを追記してください。
+#
+#  単体で動作確認する場合:
+#    docker compose up --build
+#    curl http://localhost:8000/health
+# ============================================================
+
+services:
+  dummy-llm:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: dummy-llm-standalone
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    volumes:
+      - ./server:/app
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
